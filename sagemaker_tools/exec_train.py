@@ -8,14 +8,14 @@ import boto3
 from boto3.session import Session
 
 import sagemaker
-from sagemaker import get_execution_role
 from sagemaker.chainer.estimator import Chainer
 from sagemaker.pytorch.estimator import PyTorch
 from sagemaker.tuner import HyperparameterTuner, CategoricalParameter, \
-                            ContinuousParameter, IntegerParameter
+    ContinuousParameter, IntegerParameter
 hp_type = {'continuous': ContinuousParameter,
            'integer': IntegerParameter,
            'categorical': CategoricalParameter}
+
 
 def exec_training(session, client, job_name, setting, pytorch, max_parallel_jobs):
     sagemaker_session = sagemaker.Session(
@@ -30,8 +30,8 @@ def exec_training(session, client, job_name, setting, pytorch, max_parallel_jobs
     if 'upload_data' in conf and isinstance(conf['upload_data'], list):
         for d in conf['upload_data']:
             s3_dir = sagemaker_session.upload_data(
-                                  path=d['path'],
-                                  key_prefix=os.path.join(job_name, d['key_prefix']))
+                path=d['path'],
+                key_prefix=os.path.join(job_name, d['key_prefix']))
             inputs[d['name']] = s3_dir
 
     estimator_args = conf['estimator']
@@ -58,7 +58,8 @@ def exec_training(session, client, job_name, setting, pytorch, max_parallel_jobs
             tuner_args = conf['tuner']
             hyperparameter_ranges = {}
             for k, v in targets.items():
-                hyperparameter_ranges[k] = hp_type[v['type'].lower()](v['range'])
+                hyperparameter_ranges[k] = hp_type[v['type'].lower()](
+                    v['range'])
         else:  # use default values
             tuner_args = {'objective_metric_name': 'metric_name',
                           'metric_definitions': [{'Name': 'metric_name', 'Regex': 'ignore'}],
@@ -69,9 +70,11 @@ def exec_training(session, client, job_name, setting, pytorch, max_parallel_jobs
             hyperparameter_ranges = {}
             for k, v in targets.items():
                 if v['type'].lower() != 'categorical':
-                    raise ValueError('the default tuner only supports Categorigal params.')
+                    raise ValueError(
+                        'the default tuner only supports Categorigal params.')
                 max_jobs *= len(v['range'])
-                hyperparameter_ranges[k] = hp_type[v['type'].lower()](v['range'])
+                hyperparameter_ranges[k] = hp_type[v['type'].lower()](
+                    v['range'])
             tuner_args['max_jobs'] = max_jobs
 
         tuner_args['estimator'] = estimator
@@ -150,4 +153,4 @@ def main():
         local_exec_training(args.setting, args.pytorch)
     else:
         exec_training(session, client, job_name, args.setting, args.pytorch,
-                    args.max_parallel_jobs)
+                      args.max_parallel_jobs)
