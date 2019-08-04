@@ -1,4 +1,7 @@
 import argparse
+from pathlib import Path
+from datetime import datetime
+import subprocess
 import os
 import yaml
 import boto3
@@ -81,18 +84,55 @@ def exec_training(session, client, job_name, setting, pytorch, max_parallel_jobs
         tuner.fit(inputs, job_name=job_name)
 
 
+def local_exec_training(setting, pytorch):
+    if pytorch:
+        raise NotImplementedError
+
+    conf = yaml.load(open(setting))
+    inputs = conf['inputs']
+    source_dir = conf['source_dir']
+    hyperparameters = conf['hyperparameters']
+    entry_point = conf['entry_point']
+
+    for inp_name in inputs.keys():
+        env_var_name = 'SM_CHANNEL_{}'.format(inp_name.upper())
+        assert env_var_name in os.environ,\
+            '{} doesn\'t exist.'.format(env_var_name)
+
+    cmd = ['python', str(Path(source_dir)/entry_point)]
+    for k, v in hyperparameters.items():
+        k = '--{}'.format(k)
+        cmd.append(k)
+        cmd.append(str(v))
+
+    print()
+    print('Invoked the following command:')
+    print(' '.join(cmd))
+    print()
+    subprocess.call(cmd)
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('job_name', type=str,
-                        help='Training job name. It must be unique.')
     parser.add_argument('setting', type=str,
                         help='Path to setting file.')
+    parser.add_argument('--job_name', '-j', type=str,
+                        help='Training job name. It must be unique.')
     parser.add_argument('--profile_name', '-p', type=str, default=None,
                         help='When execute a training from local, enter the profile name.')
     parser.add_argument('--pytorch', '-t', action='store_true')
     parser.add_argument('--max_parallel_jobs', type=int, default=1,
                         help='# wokers for bulk training.')
+    parser.add_argument('--local', '-l', action='store_true',
+                        help='local excution')
     args = parser.parse_args()
+
+    if args.job_name is None:
+        job_name = '{}-{}'.format(
+            Path(args.setting).stem.replace('_', '-'),
+            datetime.now().strftime('%s'))
+    else:
+        job_name = args.job_name
 
     if args.profile_name is None:
         session = Session()
@@ -106,5 +146,8 @@ def main():
                               aws_secret_access_key=credentials.secret_key,
                               aws_session_token=credentials.token)
 
-    exec_training(session, client, args.job_name, args.setting, args.pytorch,
-                  args.max_parallel_jobs)
+    if args.local:
+        local_exec_training(args.setting, args.pytorch)
+    else:
+        exec_training(session, client, job_name, args.setting, args.pytorch,
+                    args.max_parallel_jobs)
