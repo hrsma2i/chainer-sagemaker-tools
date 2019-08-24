@@ -1,4 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
+
+
+with open("requirements.txt") as requirements_file:
+    install_requires = requirements_file.read().splitlines()
 
 setup(
     author="tn1031",
@@ -6,8 +10,8 @@ setup(
     name="smtools",
     description="Some extensions and tools to run Chainer jobs on Amazon SageMaker",
     version="0.1.8.4",
-    packages=["sagemaker_tools", "sage_extensions", "smtools"],
-    install_requires=["boto3", "pyyaml<4.3,>=4.2b1", "sagemaker", "slackweb"],
+    packages=find_packages(),
+    install_requires=install_requires,
     entry_points={
         "console_scripts": [
             "smtrain=sagemaker_tools.exec_train:main",
