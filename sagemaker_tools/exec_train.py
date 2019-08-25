@@ -16,7 +16,6 @@ from sagemaker.tuner import (
     HyperparameterTuner,
     IntegerParameter,
 )
-from smtools import merge_configs
 
 hp_type = {
     "continuous": ContinuousParameter,
@@ -132,7 +131,7 @@ def exec_training_local(conf, pytorch):
 
 
 def exec_training(args):
-    conf = yaml.load(Path(args.config_file).open())
+    conf = yaml.load(Path(args.setting).open())
 
     if args.local:
         exec_training_local(conf, args.pytorch)
