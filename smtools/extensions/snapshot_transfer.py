@@ -1,10 +1,11 @@
-import boto3
 import json
 import os
 import shutil
 import tarfile
 import tempfile
-from glob import glob
+from pathlib import Path
+
+import boto3
 from chainer.training import extension
 
 
@@ -19,9 +20,10 @@ def snapshot_transfer(keys):
 def _snapshot_transfer(trainer, keys):
     # [todo] Exception handling
     training_env = os.getenv("SM_TRAINING_ENV")
-    module_dir = json.loads(training_env)["module_dir"]
-    # module_dir: 's3://<bucket_name>/<job_name>/source/sourcedir.tar.gz'
-    bucket_name, job_name = module_dir.split("/")[2:4]
+    module_dir = Path(json.loads(training_env)["module_dir"])
+    # module_dir: s3://{bucket_name}/{job_name}/source/sourcedir.tar.gz'
+    bucket_name = module_dir.parents[2].name
+    job_name = module_dir.parents[1].name
     job_name = json.loads(training_env)["job_name"]
 
     s3 = boto3.resource("s3")
@@ -29,33 +31,39 @@ def _snapshot_transfer(trainer, keys):
 
     targets = [_get_latest_modified_object(trainer.out, k) for k in keys]
 
-    transfer_dir = os.path.join(trainer.out, "model")
-    with tempfile.TemporaryDirectory(dir=trainer.out) as tmp_path:
-        for f in filter(lambda x: x is not None, targets):
-            shutil.copyfile(f, os.path.join(tmp_path, os.path.basename(f)))
-        out_tar = transfer_dir + ".tar.gz"
-        with tarfile.open(out_tar, mode="w:gz") as tar:
-            tar.add(tmp_path, arcname=os.path.basename(transfer_dir))
+    with tempfile.TemporaryDirectory(dir=trainer.out) as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+        for src_file in targets:
+            if src_file is not None:
+                tgt_file = tmp_dir / src_file.name
+                shutil.copyfile(str(src_file), str(tgt_file))
 
-        dst = os.path.join(
-            job_name,
-            "snapshot",
-            "snapshot_iter_{.updater.iteration:09}".format(trainer),
-            os.path.basename(out_tar),
+        arcname = "model"
+        out_tar = (Path(trainer.out) / arcname).with_suffix(".tar.gz")
+        with tarfile.open(str(out_tar), mode="w:gz") as tar:
+            tar.add(str(tmp_dir), arcname=arcname)
+
+        dst = str(
+            Path(job_name)
+            / "snapshot"
+            / "iter_{.updater.iteration:09}".format(trainer)
+            / out_tar.name
         )
         obj = bucket.Object(dst)
 
         try:
-            obj.upload_file(out_tar)
+            obj.upload_file(str(out_tar))
         except Exception as e:
             print(e)
-        os.remove(out_tar)
+
+        os.remove(str(out_tar))
 
 
 def _get_latest_modified_object(dirname, key):
-    target = os.path.join(dirname, "%s*" % key)
-    files = [(f, os.path.getmtime(f)) for f in glob(target)]
+    files = [(f, f.stat().st_mtime) for f in Path(dirname).glob(key)]
+
     if len(files) == 0:
-        return
+        return None
+
     latest = sorted(files, key=lambda x: x[1])[-1]
     return latest[0]
