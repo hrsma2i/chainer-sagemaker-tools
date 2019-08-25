@@ -4,7 +4,6 @@ import os
 import shutil
 import tarfile
 import tempfile
-from datetime import datetime as dt
 from glob import glob
 from chainer.training import extension
 
@@ -30,17 +29,20 @@ def _snapshot_transfer(trainer, keys):
 
     targets = [_get_latest_modified_object(trainer.out, k) for k in keys]
 
-    prefix = "snapshot" + dt.now().strftime("%y%m%d%H%M") + "_"
-    with tempfile.TemporaryDirectory(
-        prefix=prefix, dir=trainer.out
-    ) as tmp_path:
+    transfer_dir = os.path.join(trainer.out, "model")
+    with tempfile.TemporaryDirectory(dir=trainer.out) as tmp_path:
         for f in filter(lambda x: x is not None, targets):
             shutil.copyfile(f, os.path.join(tmp_path, os.path.basename(f)))
-        out_tar = tmp_path + ".tar.gz"
+        out_tar = transfer_dir + ".tar.gz"
         with tarfile.open(out_tar, mode="w:gz") as tar:
-            tar.add(tmp_path, arcname=os.path.basename(tmp_path))
+            tar.add(tmp_path, arcname=os.path.basename(transfer_dir))
 
-        dst = os.path.join(job_name, "snapshot", os.path.basename(out_tar))
+        dst = os.path.join(
+            job_name,
+            "snapshot",
+            "snapshot_iter_{.updater.iteration:09}".format(trainer),
+            os.path.basename(out_tar),
+        )
         obj = bucket.Object(dst)
 
         try:
