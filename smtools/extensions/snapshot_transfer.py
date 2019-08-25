@@ -9,15 +9,15 @@ import boto3
 from chainer.training import extension
 
 
-def snapshot_transfer(keys):
+def snapshot_transfer(patterns):
     @extension.make_extension(trigger=(1, "epoch"), priority=-200)
     def snapshot_transfer(trainer):
-        _snapshot_transfer(trainer, keys)
+        _snapshot_transfer(trainer, patterns)
 
     return snapshot_transfer
 
 
-def _snapshot_transfer(trainer, keys):
+def _snapshot_transfer(trainer, patterns):
     # [todo] Exception handling
     training_env = os.getenv("SM_TRAINING_ENV")
     module_dir = Path(json.loads(training_env)["module_dir"])
@@ -29,7 +29,7 @@ def _snapshot_transfer(trainer, keys):
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(bucket_name)
 
-    targets = [_get_latest_modified_object(trainer.out, k) for k in keys]
+    targets = [_get_latest_modified_object(trainer.out, k) for k in patterns]
 
     with tempfile.TemporaryDirectory(dir=trainer.out) as tmp_dir:
         tmp_dir = Path(tmp_dir)
