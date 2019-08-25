@@ -14,6 +14,9 @@ def list_from_str(s):
     if type(s) == list:
         return s
     elif type(s) == str:
-        return json.loads(s.replace("'", '"'))
+        try:
+            return json.loads(s.replace("'", '"'))
+        except ValueError:
+            return s
     else:
         raise ValueError
