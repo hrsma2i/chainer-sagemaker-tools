@@ -7,7 +7,7 @@ def chainer_trigger(s):
     assert (
         unit in unit_name
     ), "The last character of a trigger must be `e` or `i`"
-    return (int(n), unit_name[unit])
+    return [int(n), unit_name[unit]]
 
 
 def list_from_str(s):
