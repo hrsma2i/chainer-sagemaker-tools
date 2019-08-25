@@ -17,7 +17,7 @@ setup(
             "smtrain=sagemaker_tools.exec_train:main",
             "smdeploy=sagemaker_tools.deploy_endpoint:main",
             "smbatch=sagemaker_tools.batch_inference:main",
-            "mgconf=sagemaker_tools.merge_configs:main",
+            "mgconf=smtools.merge_configs:main",
         ]
     },
     license="MIT license",
