@@ -1,2 +1,2 @@
 from smtools.extract_tarfile import extract_tarfile
-from smtools.merge_configs import merge_config
+from smtools.merge_configs import merge_configs, merge_configs_from_file
