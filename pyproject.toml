@@ -3,6 +3,11 @@ name = "smtools"
 version = "0.1.0"
 description = ""
 authors = ["hrsma2i <hrs.ma2i@gmail.com>"]
+packages = [
+    { include = "smtools" },
+    { include = "sagemaker_tools" },
+    { include = "sage_extensions" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.6"
@@ -16,11 +21,18 @@ boto3 = "^1.11.0"
 sagemaker = "^1.50.1"
 slackweb = "^1.0.5"
 chainer = "6.0.0"
+pyyaml = "^5.3"
+
+[tool.poetry.dev-dependencies]
 mypy = "^0.761"
 flake8 = "^3.7.9"
 black = {version = "^19.10b0", allow-prereleases = true}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.scripts]
+smtrain = "sagemaker_tools.exec_train:main"
+smdeploy = "sagemaker_tools.deploy_endpoint:main"
+smbatch = "sagemaker_tools.batch_inference:main"
+mgconf = "smtools.merge_configs:main"
 
 [build-system]
 requires = ["poetry>=1.0.0"]
