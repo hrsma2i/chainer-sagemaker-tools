@@ -1,11 +1,11 @@
 # Table of Contents
 
-- [merge_configs.py](#merge_configs.py)
-- [extract_tarfile.py](#extract_tarfile.py)
-- [types.py](#types.py)
+- [merge_configs](#merge_configs)
+- [extract_tarfile](#extract_tarfile)
+- [types](#types)
 - [extensions](./extensions)
 
-# merge_configs.py
+# merge_configs
 
 This module merges config dicts loaded from yaml files for entry point scripts or `smtrain` command.
 
@@ -147,7 +147,7 @@ config = merge_configs(configs, verbose=False)
 
 - `verbose=False`: Turn off showing the above result.
 
-# extract_tarfile.py
+# extract_tarfile
 
 ### Example
 
@@ -162,6 +162,39 @@ The `tar.gz` file or split `tar.gz-*` files in `inp_dir` are extracted to `inp_d
 
 - `remove=True`: Remove split `tar.gz-*` files for memory efficiency.
 
-# types.py
+# types
+
+This module helps `smtrain` pass arguments to an entry point
+by setting functions in this module to argparse's type.
+
+SageMaker doesn't support multiple argument options like `--option arg1 arg2`, 
+but you can with `list_from_str`.
+
+`chainer_trigger` helps to pass a trigger of Chainer extension like `(100, "iteration")`, `(10, "epoch")`, etc.
+
+### Example
+
+entry point
+
+```py
+import argparse
+
+from smtools.types import list_from_str, chainer_trigger
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--option", type=list_from_str)
+parser.add_argument("--snapshot_interval", type=chainer_trigger)
+```
+
+setting.yml
+
+```yml
+estimator:
+  hyperparameters:
+    option:
+      - arg1
+      - arg2
+    snapshot_interval: "100i"
+```
 
 # extensions
