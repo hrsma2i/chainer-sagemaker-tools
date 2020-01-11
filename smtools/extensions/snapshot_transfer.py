@@ -10,21 +10,24 @@ from chainer.training import extension
 
 
 def snapshot_transfer(
-    patterns, bucket_name, key_prefix="iter_{.updater.iteration:09}"
+    patterns, key_prefix="iter_{.updater.iteration:09}", bucket_name=None,
 ):
     @extension.make_extension(trigger=(1, "epoch"), priority=-200)
     def snapshot_transfer(trainer):
-        _snapshot_transfer(trainer, patterns, bucket_name, key_prefix)
+        _snapshot_transfer(
+            trainer, patterns, key_prefix, bucket_name=bucket_name
+        )
 
     return snapshot_transfer
 
 
-def _snapshot_transfer(trainer, patterns, bucket_name, key_prefix):
+def _snapshot_transfer(trainer, patterns, key_prefix, bucket_name=None):
     # [todo] Exception handling
     training_env = os.getenv("SM_TRAINING_ENV")
     module_dir = Path(json.loads(training_env)["module_dir"])
     # module_dir: s3://{bucket_name}/{job_name}/source/sourcedir.tar.gz'
-    bucket_name = module_dir.parents[2].name
+    if bucket_name is None:
+        bucket_name = module_dir.parents[2].name
     job_name = module_dir.parents[1].name
     job_name = json.loads(training_env)["job_name"]
 
