@@ -139,7 +139,7 @@ The above command shows the following colored result.
 ### Example
 
 ```py
-from merge_configs import merge_configs
+from smtools.merge_configs import merge_configs
 
 configs = # list of config dicts
 config = merge_configs(configs, verbose=False)
@@ -152,7 +152,7 @@ config = merge_configs(configs, verbose=False)
 ### Example
 
 ```py
-from extract_tarfile import extract_tarfile
+from smtools.extract_tarfile import extract_tarfile
 
 inp_dir = # input directory where there is a tar.gz file or split tar.gz-* files.
 extract_tarfile(inp_dir, remove=True)
