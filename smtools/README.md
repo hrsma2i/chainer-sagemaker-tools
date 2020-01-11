@@ -196,5 +196,3 @@ estimator:
       - arg2
     snapshot_interval: "100i"
 ```
-
-# extensions
