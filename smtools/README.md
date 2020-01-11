@@ -149,6 +149,19 @@ config = merge_configs(configs, verbose=False)
 
 # extract_tarfile.py
 
+### Example
+
+```py
+from extract_tarfile import extract_tarfile
+
+inp_dir = # input directory where there is a tar.gz file or split tar.gz-* files.
+extract_tarfile(inp_dir, remove=True)
+```
+
+The `tar.gz` file or split `tar.gz-*` files in `inp_dir` are extracted to `inp_dir`.
+
+- `remove=True`: Remove split `tar.gz-*` files for memory efficiency.
+
 # types.py
 
 # extensions
