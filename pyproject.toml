@@ -22,6 +22,7 @@ sagemaker = "^1.50.1"
 slackweb = "^1.0.5"
 chainer = "6.0.0"
 pyyaml = "^5.3"
+colorama = "^0.4.3"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.761"
