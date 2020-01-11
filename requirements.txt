@@ -1,4 +1,0 @@
-boto3
-pyyaml<4.3,>=4.2b1
-sagemaker
-slackweb
