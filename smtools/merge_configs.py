@@ -30,18 +30,28 @@ except:
 SEPARATION = "\n" + "".join(["=" for _ in range(96)]) + "\n"
 
 
-def nestupdate(d, u):
-    for k, v in six.iteritems(u):
-        dv = d.get(k, {})
-        if not isinstance(dv, collectionsAbc.Mapping):
-            d[k] = v
-        elif isinstance(v, collectionsAbc.Mapping):
-            d[k] = nestupdate(dv, v)
-        elif type(v) == list:
-            d[k] = list(dv) + v
-        else:
-            d[k] = v
-    return d
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("yml_files", nargs="*")
+    parser.add_argument("-o", "--out_file")
+    args = parser.parse_args()
+
+    merge_configs_from_file(**vars(args))
+
+
+def merge_configs_from_file(yml_files, out_file=None, verbose=True):
+    configs = [
+        yaml.load(Path(yml_file).open(), Loader=yaml.SafeLoader)
+        for yml_file in yml_files
+    ]
+    config = merge_configs(configs, titles=yml_files, verbose=verbose)
+
+    if out_file is not None:
+        out_file = Path(out_file)
+        out_file.parent.mkdir(parents=True, exist_ok=True)
+        yaml.dump(config, out_file.open("w"), default_flow_style=False)
+
+    return config
 
 
 def merge_configs(configs, verbose=True, titles=None):
@@ -84,19 +94,18 @@ def merge_configs(configs, verbose=True, titles=None):
     return config
 
 
-def merge_configs_from_file(yml_files, out_file=None, verbose=True):
-    configs = [
-        yaml.load(Path(yml_file).open(), Loader=yaml.SafeLoader)
-        for yml_file in yml_files
-    ]
-    config = merge_configs(configs, titles=yml_files, verbose=verbose)
-
-    if out_file is not None:
-        out_file = Path(out_file)
-        out_file.parent.mkdir(parents=True, exist_ok=True)
-        yaml.dump(config, out_file.open("w"), default_flow_style=False)
-
-    return config
+def nestupdate(d, u):
+    for k, v in six.iteritems(u):
+        dv = d.get(k, {})
+        if not isinstance(dv, collectionsAbc.Mapping):
+            d[k] = v
+        elif isinstance(v, collectionsAbc.Mapping):
+            d[k] = nestupdate(dv, v)
+        elif type(v) == list:
+            d[k] = list(dv) + v
+        else:
+            d[k] = v
+    return d
 
 
 def take_diff(from_dict, to_dict, from_title="", to_title=""):
@@ -126,12 +135,3 @@ def dumps(d, **kwargs):
     buf = StringIO()
     yaml.dump(d, buf, **kwargs)
     return buf.getvalue()
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("yml_files", nargs="*")
-    parser.add_argument("-o", "--out_file")
-    args = parser.parse_args()
-
-    merge_configs_from_file(**vars(args))
