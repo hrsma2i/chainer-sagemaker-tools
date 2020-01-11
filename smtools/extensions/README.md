@@ -8,7 +8,7 @@
 ### Python code example
 
 ```python
-from sage_extensions import slack_report
+from smtools.extensions import slack_report
 
 val_interval = 1, 'epoch'
 keys = ['iteration', 'epoch', 'elapsed_time', 'lr',
@@ -47,7 +47,7 @@ This uri is the similar to the path to put the `sourcedir.tar.gz` .
 ### Python code example
 
 ```python
-from sage_extensions import snapshot_transfer
+from smtools.extensions import snapshot_transfer
 
 snapshot_trigger = 1, 'epoch'
 patterns = [
