@@ -1,11 +1,24 @@
 import argparse
 import collections
-import pprint as pp
-import sys
+from io import StringIO
+from copy import deepcopy
+import difflib
 from pathlib import Path
 
 import six
 import yaml
+
+try:
+    from colorama import Fore, Back, Style, init
+
+    init()
+except ImportError:  # fallback so that the imported classes always exist
+
+    class ColorFallback:
+        def __getattr__(self, name):
+            return ""
+
+    Fore = Back = Style = ColorFallback()
 
 # python 3.8+ compatibility
 try:
@@ -14,39 +27,19 @@ except:
     collectionsAbc = collections
 
 
-BLUE = "\x1B[34m"
-GREEN = "\x1B[32m"
-CLEAR = "\x1B[0m"
+SEPARATION = "\n" + "".join(["=" for _ in range(96)]) + "\n"
 
 
-def nestupdate(d, u, verbose=False, indent=0):
-    _indent = "".join([" " for _ in range(indent)])
+def nestupdate(d, u):
     for k, v in six.iteritems(u):
         dv = d.get(k, {})
         if not isinstance(dv, collectionsAbc.Mapping):
-            if verbose and dv != v:
-                _k = BLUE + k + CLEAR
-                print("{}{}: {} -> {}".format(_indent, _k, dv, v))
             d[k] = v
         elif isinstance(v, collectionsAbc.Mapping):
-            if verbose and dv != v:
-                print("{}{}: {{".format(_indent, k))
-            d[k] = nestupdate(dv, v, verbose=verbose, indent=indent + 2)
-            if verbose and dv != v:
-                print("}")
+            d[k] = nestupdate(dv, v)
         elif type(v) == list:
             d[k] = list(dv) + v
-            if verbose and dv != v:
-                _k = BLUE + k + CLEAR
-                print(
-                    "{}{}: {} -> {}".format(
-                        _indent, _k, list(dv), pp.pformat(d[k], indent=2)
-                    )
-                )
         else:
-            if verbose and dv != v:
-                _k = BLUE + k + CLEAR
-                print("{}{}: {} -> {}".format(_indent, _k, None, v))
             d[k] = v
     return d
 
@@ -55,31 +48,47 @@ def merge_configs(configs, verbose=True, titles=None):
     print()
 
     if titles is None:
-        titles = ["config-{}".format(i + 1) for i in range(len(configs))]
+        titles = [f"config-{i+1}" for i in range(len(configs))]
 
-    config = dict()
-    first = True
+    title = titles[0]
+    config = configs[0]
+    first_title = deepcopy(title)
+    first_config = deepcopy(config)
 
-    for title, _config in zip(titles, configs):
+    for title, _config in zip(titles[1:], configs[1:]):
 
-        if verbose and not first:
-            print(GREEN + title + CLEAR)
+        config_prev = deepcopy(config)
+        config = nestupdate(config, _config)
 
-        config = nestupdate(config, _config, verbose=verbose and not first)
-
-        if verbose and not first:
-            print()
-        first = False
+        if verbose:
+            print(
+                take_diff(
+                    config_prev,
+                    config,
+                    from_title="previous config",
+                    to_title=title,
+                )
+            )
+            print(SEPARATION)
 
     if verbose:
-        print(GREEN + "FINAL CONFIG:" + CLEAR)
-    pp.pprint(config, indent=2)
+        print(
+            take_diff(
+                first_config,
+                config,
+                from_title=first_title,
+                to_title="FINALE CONFIG",
+            )
+        )
 
     return config
 
 
 def merge_configs_from_file(yml_files, out_file=None, verbose=True):
-    configs = [yaml.load(Path(yml_file).open()) for yml_file in yml_files]
+    configs = [
+        yaml.load(Path(yml_file).open(), Loader=yaml.SafeLoader)
+        for yml_file in yml_files
+    ]
     config = merge_configs(configs, titles=yml_files, verbose=verbose)
 
     if out_file is not None:
@@ -88,6 +97,35 @@ def merge_configs_from_file(yml_files, out_file=None, verbose=True):
         yaml.dump(config, out_file.open("w"), default_flow_style=False)
 
     return config
+
+
+def take_diff(from_dict, to_dict, from_title="", to_title=""):
+    from_ymlstr = dumps(from_dict, default_flow_style=False).splitlines()
+    to_ymlstr = dumps(to_dict, default_flow_style=False).splitlines()
+    diff = difflib.unified_diff(
+        from_ymlstr, to_ymlstr, fromfile=from_title, tofile=to_title
+    )
+    diff = color_diff(diff)
+    return "\n".join(diff)
+
+
+def color_diff(diff):
+    for line in diff:
+        if line.startswith("+"):
+            yield Fore.GREEN + line + Fore.RESET
+        elif line.startswith("-"):
+            yield Fore.RED + line + Fore.RESET
+        elif line.startswith("^"):
+            yield Fore.BLUE + line + Fore.RESET
+        else:
+            yield line
+    return color_diff
+
+
+def dumps(d, **kwargs):
+    buf = StringIO()
+    yaml.dump(d, buf, **kwargs)
+    return buf.getvalue()
 
 
 def main():
