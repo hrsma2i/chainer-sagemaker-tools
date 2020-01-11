@@ -1,7 +1,7 @@
 # Chainer Extensions
 
-- `slack_report` : Trainer extension to post training metrics and plots.
-- `snapshot_transfer` : Trainer extension to copy latest snapshots and other outputs.
+- [`slack_report`](#slack_report) : Trainer extension to post training metrics and plots.
+- [`snapshot_transfer`](#snapshot_transfer) : Trainer extension to copy latest snapshots and other outputs.
 
 ## slack_report
 
@@ -39,7 +39,10 @@ trainer.extend(
 
 ## snapshot_transfer
 
-This extension compresses some files such as the latest snapshot and the log and copies it to S3. The distination is `s3://<buket_name>/<job_name>/snapshot/` . This uri is the similar to the path to put the `sourcedir.tar.gz` .
+This extension compresses some files in `trainer.out` such as the latest snapshot and the log and copies it to S3.
+The distination is `s3://{buket_name}/{job_name}/snapshot/{key_prefix}/model.tar.gz`.
+Its default is `s3://{dafault_bucket}/{job_name}/snapshot/iter_{iteration:09}/model.tar.gz`
+This uri is the similar to the path to put the `sourcedir.tar.gz` .
 
 ### Python code example
 
@@ -47,12 +50,17 @@ This extension compresses some files such as the latest snapshot and the log and
 from sage_extensions import snapshot_transfer
 
 snapshot_trigger = 1, 'epoch'
+patterns = [
+    "weight.npz",
+    "log",
+    "last_trainer_snapshot",
+    "args.yml",
+]
 
 trainer.extend(
-    snapshot_transfer(['snapshot', 'model', 'log']),
-    trigger=snapshot_trigger)
+    snapshot_transfer(patterns, trigger=snapshot_trigger)
 ```
 
 ### Parameter
 
-- `keys` - Prefixes of files to copy. Each of the latest file whose name contains the one of the given prefix list is transferred to S3.
+- `patterns` - Prefixes of files to copy. Each of the latest file whose name contains the one of the given prefix list is transferred to S3.
