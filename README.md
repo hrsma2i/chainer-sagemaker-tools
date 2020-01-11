@@ -8,6 +8,13 @@ It contains
 - ~~[`sage_extensions`](./sage_extensions) : Some Extensions for Chainer Trainer.~~ → Use `smtools.extensions`, but keep this package to reflect the original repository's update.
 - [`smtools`](./smtools) : Utilities and Chainer extensions modified by hrsma2i.
 
+# Table of contents
+
+- [Installation](#Installation)
+- [Run SageMaker training jobs](#Run-SageMaker-training-jobs)
+- [Deploy trained model](#Deploy-trained-model)
+- [Run batch inference](#Run-batch-inference)
+
 # Installation
 
 ```bash
