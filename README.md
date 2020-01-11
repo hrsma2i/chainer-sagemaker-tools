@@ -37,7 +37,7 @@ $ smtrain {path_to_setting} [-j {job_name} -p {aws_profile_name} -l]
 - `path_to_setting` - Path to the setting file. The format of this file is described in [here](https://github.com/tn1031/chainer-sagemaker-tools/blob/master/examples/train.yml).
 - `job_name` - Training job name. It must be unique in the same AWS account. Its default is `{setting_name}-{unixtime}`.
 - `aws_profile_name` - The name of profile that are stored in `~/.aws/config` . You can also designate this from the setting file with the key `profile_name`.
-- `-l`, `--local`: Excute the entry point on local machine for efficiet debugging.
+- `-l`, `--local`: Excute the entry point on the local machine for efficient debugging.
 
 # Deploy trained model
 
