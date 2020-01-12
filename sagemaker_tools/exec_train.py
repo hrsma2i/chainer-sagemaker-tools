@@ -131,7 +131,7 @@ def exec_training_local(conf, pytorch):
 
 
 def exec_training(args):
-    conf = yaml.load(Path(args.setting).open())
+    conf = yaml.load(Path(args.setting).open(), Loader=yaml.SafeLoader)
 
     if args.local:
         exec_training_local(conf, args.pytorch)

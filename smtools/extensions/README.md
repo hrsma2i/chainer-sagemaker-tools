@@ -58,7 +58,7 @@ patterns = [
 ]
 
 trainer.extend(
-    snapshot_transfer(patterns, trigger=snapshot_trigger)
+    snapshot_transfer(patterns), trigger=snapshot_trigger)
 ```
 
 ### Parameter
