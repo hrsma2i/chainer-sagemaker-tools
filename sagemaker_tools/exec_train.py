@@ -106,16 +106,16 @@ def exec_training_local(conf, pytorch):
     if pytorch:
         raise NotImplementedError
 
+    estimator_args = conf["estimator"]
     inputs = conf["inputs"]
-    source_dir = conf["source_dir"]
-    hyperparameters = conf["hyperparameters"]
-    entry_point = conf["entry_point"]
+
+    source_dir = estimator_args["source_dir"]
+    hyperparameters = estimator_args["hyperparameters"]
+    entry_point = estimator_args["entry_point"]
 
     for inp_name in inputs.keys():
-        env_var_name = "SM_CHANNEL_{}".format(inp_name.upper())
-        assert env_var_name in os.environ, "{} doesn't exist.".format(
-            env_var_name
-        )
+        env_var_name = f"SM_CHANNEL_{inp_name.upper()}"
+        assert env_var_name in os.environ, f"{env_var_name} doesn't exist."
 
     cmd = ["python", str(Path(source_dir) / entry_point)]
     for k, v in hyperparameters.items():
