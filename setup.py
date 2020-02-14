@@ -8,13 +8,14 @@ package_data = \
 {'': ['*']}
 
 install_requires = \
-['Pillow>=7.0.0,<8.0.0',
- 'boto3>=1.11.0,<2.0.0',
+['boto3>=1.11.0,<2.0.0',
  'chainer==6.0.0',
+ 'colorama>=0.4.3,<0.5.0',
  'joblib>=0.14.1,<0.15.0',
  'matplotlib>=3.1.2,<4.0.0',
  'numpy>=1.18.1,<2.0.0',
  'pandas>=0.25.3,<0.26.0',
+ 'pillow>=6.2.1,<7.0.0',
  'pyyaml>=5.3,<6.0',
  'sagemaker>=1.50.1,<2.0.0',
  'slackweb>=1.0.5,<2.0.0',
