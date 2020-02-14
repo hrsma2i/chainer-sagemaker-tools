@@ -199,13 +199,6 @@ def main():
         help="When execute a training from local, enter the profile name.",
     )
     parser.add_argument(
-        "--framework_name",
-        "-f",
-        choices=FrameworkName.values,
-        default=FrameworkName.Chainer,
-        help="pt: pytorch, ch: chainer, tf: tensorflow",
-    )
-    parser.add_argument(
         "--max_parallel_jobs",
         type=int,
         default=1,
@@ -215,4 +208,4 @@ def main():
         "--local", "-l", action="store_true", help="local excution"
     )
     args = parser.parse_args()
-    exec_training(args)
+    exec_training(**vars(args))
