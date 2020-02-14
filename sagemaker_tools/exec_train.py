@@ -30,9 +30,11 @@ class FrameworkName:
     TensorFlow = "tf"
     PyTorch = "pt"
 
-    @classmethod
-    def values(cls):
-        return [v for k, v in vars(cls).items() if not k.startswith("_")]
+    values = [
+        PyTorch,
+        TensorFlow,
+        Chainer,
+    ]
 
 
 def exec_training_sm(
@@ -199,7 +201,7 @@ def main():
     parser.add_argument(
         "--framework_name",
         "-f",
-        choices=FrameworkName.values(),
+        choices=FrameworkName.values,
         default=FrameworkName.Chainer,
         help="pt: pytorch, ch: chainer, tf: tensorflow",
     )
