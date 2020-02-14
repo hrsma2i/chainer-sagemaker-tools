@@ -10,6 +10,7 @@ import yaml
 from boto3.session import Session
 from sagemaker.chainer.estimator import Chainer
 from sagemaker.pytorch.estimator import PyTorch
+from sagemaker.tensorflow.estimator import TensorFlow
 from sagemaker.tuner import (
     CategoricalParameter,
     ContinuousParameter,
@@ -24,8 +25,18 @@ hp_type = {
 }
 
 
+class FrameworkName:
+    Chainer = "ch"
+    TensorFlow = "tf"
+    PyTorch = "pt"
+
+    @classmethod
+    def values(cls):
+        return [v for k, v in vars(cls).items() if not k.startswith("_")]
+
+
 def exec_training_sm(
-    session, client, job_name, conf, pytorch, max_parallel_jobs
+    session, client, job_name, conf, framework_name, max_parallel_jobs
 ):
     sagemaker_session = sagemaker.Session(
         boto_session=session, sagemaker_client=client
@@ -54,9 +65,11 @@ def exec_training_sm(
             fixed[k] = v
     estimator_args["hyperparameters"] = fixed
 
-    if pytorch:
+    if framework_name == FrameworkName.PyTorch:
         estimator = PyTorch(**estimator_args)
-    else:
+    elif framework_name == FrameworkName.TensorFlow:
+        estimator = TensorFlow(**estimator_args)
+    elif framework_name == FrameworkName.Chainer:
         estimator = Chainer(**estimator_args)
 
     if len(targets) == 0:
@@ -183,7 +196,13 @@ def main():
         default=None,
         help="When execute a training from local, enter the profile name.",
     )
-    parser.add_argument("--pytorch", "-t", action="store_true")
+    parser.add_argument(
+        "--framework_name",
+        "-f",
+        choices=FrameworkName.values(),
+        default=FrameworkName.Chainer,
+        help="pt: pytorch, ch: chainer, tf: tensorflow",
+    )
     parser.add_argument(
         "--max_parallel_jobs",
         type=int,
