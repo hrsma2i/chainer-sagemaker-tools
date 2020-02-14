@@ -38,7 +38,7 @@ class FrameworkName:
 
 
 def exec_training_sm(
-    session, client, job_name, conf, framework_name, max_parallel_jobs
+    session, client, job_name, conf, max_parallel_jobs, framework_name
 ):
     sagemaker_session = sagemaker.Session(
         boto_session=session, sagemaker_client=client
@@ -117,10 +117,7 @@ def exec_training_sm(
         tuner.fit(inputs, job_name=job_name)
 
 
-def exec_training_local(conf, pytorch):
-    if pytorch:
-        raise NotImplementedError
-
+def exec_training_local(conf):
     estimator_args = conf["estimator"]
     inputs = conf["inputs"]
 
@@ -145,18 +142,26 @@ def exec_training_local(conf, pytorch):
     subprocess.call(cmd)
 
 
-def exec_training(args):
-    conf = yaml.load(Path(args.setting).open(), Loader=yaml.SafeLoader)
+def exec_training(
+    setting: str,
+    local: bool,
+    job_name: str,
+    profile_name: str,
+    max_parallel_jobs: int,
+):
+    setting = Path(setting)
+    conf = yaml.load(setting.open(), Loader=yaml.SafeLoader)
 
-    if args.local:
-        exec_training_local(conf, args.pytorch)
+    if local:
+        exec_training_local(conf)
     else:
-        job_name = args.job_name or "{}-{}".format(
-            Path(args.setting).stem.replace("_", "-"),
-            datetime.now().strftime("%s"),
+        framework_name = conf.get("framework_name", FrameworkName.Chainer)
+
+        job_name = job_name or "{}-{}".format(
+            setting.stem.replace("_", "-"), datetime.now().strftime("%s"),
         )
 
-        profile_name = args.profile_name or conf.get("profile_name")
+        profile_name = profile_name or conf.get("profile_name")
         if profile_name is None:
             session = Session()
             client = boto3.client("sagemaker", region_name=session.region_name)
@@ -173,12 +178,7 @@ def exec_training(args):
             )
 
         exec_training_sm(
-            session,
-            client,
-            job_name,
-            conf,
-            args.pytorch,
-            args.max_parallel_jobs,
+            session, client, job_name, conf, max_parallel_jobs, framework_name,
         )
 
 
