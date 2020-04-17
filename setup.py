@@ -2,7 +2,11 @@
 from setuptools import setup
 
 packages = \
-['sage_extensions', 'sagemaker_tools', 'smtools', 'smtools.extensions']
+['sage_extensions',
+ 'sagemaker_tools',
+ 'smtools',
+ 'smtools.chainer.extensions',
+ 'smtools.torch.handlers']
 
 package_data = \
 {'': ['*']}
@@ -16,6 +20,7 @@ install_requires = \
  'numpy>=1.18.1,<2.0.0',
  'pandas>=0.25.3,<0.26.0',
  'pillow>=6.2.1,<7.0.0',
+ 'pytorch-ignite>=0.3.0,<0.4.0',
  'pyyaml>=5.3,<6.0',
  'sagemaker>=1.50.1,<2.0.0',
  'slackweb>=1.0.5,<2.0.0',
