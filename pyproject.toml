@@ -33,6 +33,8 @@ rope = "^0.16.0"
 pytest = "^5.4.1"
 jupyter = "^1.0.0"
 ipython = "^7.13.0"
+moto = "^1.3.14"
+pytest-mock = "^3.0.0"
 
 [tool.poetry.scripts]
 smtrain = "sagemaker_tools.exec_train:main"
