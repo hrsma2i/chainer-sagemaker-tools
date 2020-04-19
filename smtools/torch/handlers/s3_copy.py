@@ -24,5 +24,7 @@ def s3_copy(
     key_prefix = key_prefix.format(job_name=job_name, trainer=trainer)
     for path in paths:
         s3.meta.client.upload_file(
-            str(path), bucket_name, f"{key_prefix}/{path.name}"
+            Filename=str(path),
+            Bucket=bucket_name,
+            Key=f"{key_prefix}/{path.name}",
         )
