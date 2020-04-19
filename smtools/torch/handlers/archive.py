@@ -2,8 +2,15 @@ from typing import List
 from pathlib import Path
 import tarfile
 
+from ignite.engine import Engine
 
-def archive(patterns: List[str], out_file: Path, compress: bool = True):
+
+def archive(
+    trainer: Engine,
+    patterns: List[str],
+    out_file: Path,
+    compress: bool = True,
+):
     paths: List[Path] = list()
     for pattern in patterns:
         paths += list(Path("/").glob(pattern.lstrip("/")))
