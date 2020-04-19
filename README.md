@@ -1,20 +1,29 @@
-# chainer-sagemaker-tools
+# SageMaker Tools
+
+<!-- TOC -->
+
+- [SageMaker Tools](#sagemaker-tools)
+- [Installation](#installation)
+- [Run SageMaker training jobs](#run-sagemaker-training-jobs)
+    - [Usage](#usage)
+- [Deploy trained model](#deploy-trained-model)
+    - [Usage](#usage-1)
+- [Run batch inference](#run-batch-inference)
+    - [Usage](#usage-2)
+- [Config management example](#config-management-example)
+    - [Example](#example)
+
+<!-- /TOC -->
 
 This repository is a collection of tools to run SageMaker jobs.
 
 It contains
 
 - CLIs : Some command line tools to use SageMaker easily. See below guidelines.
-- ~~[`sage_extensions`](./sage_extensions) : Some Extensions for Chainer Trainer.~~ → Use `smtools.extensions`, but keep this package to reflect the original repository's update.
-- [`smtools`](./smtools) : Utilities and Chainer extensions modified by hrsma2i.
-
-# Table of contents
-
-- [Installation](#Installation)
-- [Run SageMaker training jobs](#Run-SageMaker-training-jobs)
-- [Deploy trained model](#Deploy-trained-model)
-- [Run batch inference](#Run-batch-inference)
-- [Config management example](#Config-management-example)
+- ~~[`sage_extensions`](./sage_extensions) : Some Extensions for Chainer Trainer.~~ → Use `smtools.chainer.extensions`, but keep this package to reflect the original repository's update.
+- [`smtools`](./smtools) : Utilities modified by hrsma2i.
+    - [`chainer.extensions`](./smtools/chainer/extensions)
+    - [`torch.handlers`](./smtools/torch/handlers)
 
 # Installation
 
@@ -36,7 +45,7 @@ Then put the file in the `source_dir` .
 
 `smtrain` is a command line tool to run SageMaker training jobs.
 
-### Usage
+## Usage
 
 ```bash
 $ smtrain {path_to_setting} [-j {job_name} -p {aws_profile_name} -l]
@@ -51,7 +60,7 @@ $ smtrain {path_to_setting} [-j {job_name} -p {aws_profile_name} -l]
 
 `smdeploy` is a command line tool to deploy.
 
-### Usage
+## Usage
 
 ```bash
 $ smdeploy <endpoint_name> <path_to_setting> [-p <aws_profile_name>]
@@ -65,7 +74,7 @@ $ smdeploy <endpoint_name> <path_to_setting> [-p <aws_profile_name>]
 
 `smbatch` is a command line tool to run batch inference.
 
-### Usage
+## Usage
 
 ```bash
 $ smbatch <model_name> <path_to_setting> [-p <aws_profile_name>]
@@ -91,7 +100,7 @@ We want to share **global** ones among all jobs.
 We can do that if we split them into different files and merge them when feeding it to `smtrain`, `smdeploy`, or `smbatch`.
 
 
-### Example
+## Example
 
 directory structure
 
